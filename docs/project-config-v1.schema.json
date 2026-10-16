@@ -1,0 +1,52 @@
+{
+  "$comment": "Structural validation only. Validate with ProjectConfig before use: text is trimmed before length checks, and names must yield an ASCII letter or digit after Unicode NFKD normalization.",
+  "additionalProperties": false,
+  "description": "Version 1 of the local project configuration; no runtime or credential state.",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 5000,
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "difficulty": {
+      "enum": [
+        "beginner",
+        "intermediate"
+      ],
+      "title": "Difficulty",
+      "type": "string"
+    },
+    "language": {
+      "const": "TypeScript",
+      "title": "Language",
+      "type": "string"
+    },
+    "scaffold_level": {
+      "const": "minimal",
+      "title": "Scaffold Level",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "difficulty",
+    "language",
+    "scaffold_level"
+  ],
+  "title": "ProjectConfig",
+  "type": "object"
+}
