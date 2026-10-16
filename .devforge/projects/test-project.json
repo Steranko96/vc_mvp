@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "name": "test_project",
+  "description": "small notes app",
+  "difficulty": "intermediate",
+  "language": "Python",
+  "scaffold_level": "minimal"
+}
