@@ -5,6 +5,7 @@ description = "A local-first CLI for learning software engineering."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "openai-codex>=0.163.0",
     "pydantic>=2.0",
     "questionary>=2.1",
     "rich>=14.0",

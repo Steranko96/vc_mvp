@@ -39,6 +39,65 @@ See the [configuration format](docs/PROJECT_CONFIG.md) and its
 in the name or description: those fields are stored as plain text. No credentials
 or environment settings are collected.
 
+## Structured agent adapter
+
+`devforge.agents.StructuredAgent` is the application interface. Consumers should
+accept it as a dependency so unit tests can supply a fake. The SDK implementation
+is `devforge.agents.codex.CodexAgent`:
+
+```python
+from pathlib import Path
+
+from pydantic import BaseModel
+
+from devforge.agents import StructuredAgent
+from devforge.agents.codex import CodexAgent
+
+
+class Summary(BaseModel):
+    summary: str
+
+
+agent: StructuredAgent = CodexAgent()
+result = agent.run(
+    "Summarize this project.",
+    Summary,
+    working_directory=Path("/absolute/path/to/existing/project"),
+)
+print(result.summary)
+```
+
+Each call creates a fresh synchronous SDK client and checks that an existing
+ChatGPT account is signed in. It creates a read-only thread with permission
+escalation denied, supplies the model's JSON Schema as `output_schema`, and returns
+a Pydantic-validated model. The SDK client is closed on success and
+failure. Interrupted or incomplete turns never return a model. If execution and
+cleanup both fail, the primary exception is preserved and a sanitized cleanup
+note is attached. Keyboard interrupts and process exits propagate after cleanup.
+Relative directories are resolved explicitly; missing directories and
+files raise `ValueError` before Codex starts. The directory is a context location,
+not a restriction on which files Codex can read.
+
+The official `openai-codex` dependency includes its pinned Codex CLI runtime.
+Configure your existing local Codex sign-in separately before using the adapter;
+DevForge does not log in, collect API keys, or change authentication state. It uses
+the SDK's local authentication and default model configuration. Missing sign-in,
+API-key accounts, and other authentication modes are rejected before thread
+creation; use `codex login` with your ChatGPT account separately. Prompts and project
+context are sent through Codex when you invoke `run`; existing CLI commands do not
+invoke it.
+
+Catch `AgentExecutionError`, `AgentMissingResponseError`, or
+`AgentInvalidOutputError` from `devforge.agents` (all derive from `AgentError`).
+Execution errors identify the failing stage and exception type, with fixed
+remediation guidance for recognized SDK error types and structured error codes.
+When the SDK exposes only an opaque runtime error, guidance lists sign-in, usage
+limits, and schema compatibility checks. Raw SDK error messages, validation
+inputs, prompts, and responses are omitted from application
+diagnostics. The adapter adds no retries, streaming, or application session
+persistence. The service may reject JSON Schema features it does not support.
+Unit tests mock the SDK and do not require authentication or network access.
+
 ## Development checks
 
 ```sh
